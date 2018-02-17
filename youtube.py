@@ -1,4 +1,5 @@
 import requests
+import time
 import sys
 import re
 import google_auth_oauthlib.flow
@@ -53,3 +54,20 @@ def add_playlist_items(playlist_id, links, token):
             print(r.status_code, link)
             print()
 
+
+def get_video_object(link, token):
+    r = requests.get('https://www.googleapis.com/youtube/v3/videos?part=snippet&id={}&access_token={}'.format(link, token))
+    title = re.findall(r'(?<=title":\s").+(?=",)', r.text)[0]
+    channel = re.findall(r'(?<=channelTitle":\s").+(?=",)', r.text)[0]
+    if "- Topic" in channel:
+        artist = re.findall(r'.+(?= - Topic)', channel)[0]
+        query = (artist + "+" + title).replace(" ", "+")
+        query = query.replace('?', '')
+        return query
+
+
+def search_youtube(query, token):
+    r = requests.get('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q={}&type=video&access_token={}'.format(query, token))
+    time.sleep(0.1)
+    video_id = re.findall(r'(?<=videoId":\s").+(?=")', r.text)[0]
+    return video_id
