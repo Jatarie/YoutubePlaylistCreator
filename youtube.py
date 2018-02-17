@@ -57,13 +57,21 @@ def add_playlist_items(playlist_id, links, token):
 
 def get_video_object(link, token):
     r = requests.get('https://www.googleapis.com/youtube/v3/videos?part=snippet&id={}&access_token={}'.format(link, token))
-    title = re.findall(r'(?<=title":\s").+(?=",)', r.text)[0]
-    channel = re.findall(r'(?<=channelTitle":\s").+(?=",)', r.text)[0]
+    try:
+        title = re.findall(r'(?<=title":\s").+(?=",)', r.text)[0]
+        channel = re.findall(r'(?<=channelTitle":\s").+(?=",)', r.text)[0]
+    except IndexError:
+        print('https://youtu.be/{} returned 0 results'.format(link))
+        return None
+    if "Various Artists" in channel:
+        return 'same'
     if "- Topic" in channel:
+        print('https://youtu.be/{} TOPIC'.format(link))
         artist = re.findall(r'.+(?= - Topic)', channel)[0]
         query = (artist + "+" + title).replace(" ", "+")
         query = query.replace('?', '')
         return query
+    return 'same'
 
 
 def search_youtube(query, token):

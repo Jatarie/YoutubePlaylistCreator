@@ -23,33 +23,37 @@ def parse_comment(comment, link_list):
 
 def get_links():
     reddit = get_reddit_session()
-    submission = reddit.submission(id='7xmsgf')
+    submission = reddit.submission(id='7r7rjo')
     submission.comments.replace_more(limit=None)
     link_list = []
     for comment in submission.comments.list():
         parse_comment(comment.body, link_list)
     link_list = parse_comment(submission.selftext, link_list)
-    print(link_list)
     return link_list
 
 
 links = get_links()
+print(len(links))
 # youtube.request_token()
-input("Press a key")
-print("input accepted")
+input("Press enter")
 # token = youtube.parse_token()
-token = 'ya29.GlxlBflLnYz9FFvUC589gBo7ZIYiRDNtd-HqvZRZlA7aRrwBu0XN5dqpkTWMIC6W-XX44S1G-XtCj36JtrcjLYa-8J4S6wCOfkJ_vzGtRTZAQ531qQHLXTRy_F-JOg'
+token = 'ya29.GlxlBZIcMa97otw7Q6yJMP6qFUGB25RUntWl-HR2J4IfQIyRjVdpTo_iN9--YBVDrZ2wbnulBBLk2_wUBDc0GxLrrCPJ5e91nrue7JEvRVU0wk4jajUhfAguTvp-BA'
 print("token function returned {}".format(token))
 topicless_link_list = []
+
 for link in links:
     query = youtube.get_video_object(link, token)
-    if query is not None:
+    if query is None:
+        continue
+    elif query is 'same':
+        topicless_link_list.append(link)
+    else:
         topicless_link = youtube.search_youtube(query, token)
         topicless_link_list.append(topicless_link)
-    else:
-        topicless_link_list.append(link)
+        print("Before: https://youtu.be/{}\nAfter: https://youtu.be/{}".format(link, topicless_link))
+
 links = topicless_link_list
-playlist_name = "topicless bi-weekly music sharing thread 35"
+playlist_name = "bi-weekly music sharing thread 33"
 r = youtube.create_playlist(token, playlist_name)
 print("Playlist function returned {}".format(r.status_code))
 playlist_id = r.json()["id"]
