@@ -14,19 +14,13 @@ def get_reddit_session():
 
 
 def parse_comment(comment, link_list):
-    links = re.findall(r'http.+?(?=\))', comment)
-    for link in links:
-        if "spotify" not in link:
-            try:
-                x = re.findall(r'(?<=youtu.be/).+', link)[0][0:12]
-            except:
-                try:
-                    x = re.findall(r'(?<=watch\?v=).+', link)[0][0:12]
-                except IndexError:
-                    continue
-            if x[-1] == "&":
-                x = x[:-1]
-            link_list.append(x)
+    proper = re.findall(r'(?<=youtu).+?[a-zA-Z0-9_-]{11,12}(?=[\s\n)&]|$)', comment)
+    for i in proper:
+        if "watch" in i:
+            i = re.findall(r'(?<=watch\?v=).+', i)[0]
+        else:
+            i = re.findall(r'(?<=\.be/).+', i)[0]
+        link_list.append(i)
     return link_list
 
 
@@ -36,16 +30,21 @@ def main():
     submission.comments.replace_more(limit=None)
     link_list = []
     for comment in submission.comments.list():
-        link_list = parse_comment(comment.body, link_list)
+        parse_comment(comment.body, link_list)
     link_list = parse_comment(submission.selftext, link_list)
+    print(link_list)
     return link_list
 
 
 links = main()
 youtube.request_token()
 input("Press a key")
+print("input accepted")
 token = youtube.parse_token()
+print("token function returned {}".format(token))
 playlist_name = "bi-weekly music sharing thread 35"
 r = youtube.create_playlist(token, playlist_name)
+print("Playlist function returned {}".format(r.status_code))
 playlist_id = r.json()["id"]
+print("Adding links to playlist")
 youtube.add_playlist_items(playlist_id, links, token)

@@ -21,7 +21,7 @@ def request_token():
 
 
 def parse_token():
-    with open('C:\\Users\Matt\AppData\Local\Temp\log.txt-main.12124', "r") as f:
+    with open('C:\\Users\Matt\AppData\Local\Temp\log.txt-main.9444', "r") as f:
         for line in f:
             if "127.0.0.1:8000/?state=" in line:
                 code_line = line
@@ -40,15 +40,16 @@ def create_playlist(token, playlist_name):
 def add_playlist_items(playlist_id, links, token):
     url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&access_token={}'
     for index, link in enumerate(links):
-        try:
-            sys.stdout.write("{}/{}".format(index, len(links)))
-            sys.stdout.flush()
-            requests.post(url.format(token), json={
-                    "snippet": {
-                    "playlistId": playlist_id,
-                    "resourceId": {
-                        "kind": "youtube#video",
-                        "videoId": link
-                    }}})
-        except:
-            print(link)
+        sys.stdout.write("\r{}/{}".format(index, len(links)))
+        r = requests.post(url.format(token), json={
+                "snippet": {
+                "playlistId": playlist_id,
+                "resourceId": {
+                    "kind": "youtube#video",
+                    "videoId": link
+                }}})
+        if r.status_code != 200:
+            print()
+            print(r.status_code, link)
+            print()
+
